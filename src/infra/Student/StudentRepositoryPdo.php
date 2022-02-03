@@ -3,9 +3,10 @@
 namespace Mateus\Arquitetura\Infra\Student;
 
 use Mateus\Arquitetura\Domain\Student\Student;
+use Mateus\Arquitetura\Domain\Student\StudentNotFound\StudentNotFound;
+
 use Mateus\Arquitetura\Domain\Student\StudentRepository;
 use Mateus\Arquitetura\Domain\Cpf;
-
 class StudentRepositoryPdo implements StudentRepository{
   private \PDO $connection;
   public function __construct(\PDO $connection)
@@ -50,6 +51,29 @@ class StudentRepositoryPdo implements StudentRepository{
 
   /** @return Student[] */
   public function searchStudents():array{
+    $sql = 'SELECT * FROM alunos LEFT JOIN telefone ON telefone.cpf_aluno=alunos.cpf';
+    $stmt= $this->connection->query($sql);
+
+    $listStudentData = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+    $students = [];
+
+    foreach ($listStudentData as $value) {
+      if(!array_key_exists($value['cpf'],$students)){
+        $students[$value['cpf']] = Student::withCpfNameAndEmail(
+          $value['cpf'],
+          $value['nome'],
+          $value['email'],
+          
+          
+        );
+
+      }
+      $students[$value['cpf']]->addStudent($value['ddd'],$value['telefone']);
+
+      return array_values($students);
+    }
+
 
   }
 
@@ -57,6 +81,8 @@ class StudentRepositoryPdo implements StudentRepository{
     $firstLine = $dadosAlunos[0];
 
     $aluno =Student::withCpfNameAndEmail($firstLine['cpf'],$firstLine['nome'],$firstLine['email']);
+
+    return $aluno;
     
 
   }
