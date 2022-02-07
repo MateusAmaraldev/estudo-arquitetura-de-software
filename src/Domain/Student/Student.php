@@ -10,6 +10,7 @@ class Student{
   private string $name;
   private Email $email;
   private array $telephones;
+  private string $password;
 
   public static function withCpfNameAndEmail(string $cpf, string $name,string $email) {
     return new Student(new Cpf($cpf),$name ,new Email($email));
